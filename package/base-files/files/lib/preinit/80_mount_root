@@ -40,7 +40,7 @@ do_mount_root() {
 		echo "- config restore -"
 		cp /etc/passwd /etc/group /etc/shadow /tmp
 		cd /
-		[ -f /sysupgrade.tgz ] && tar xzf /sysupgrade.tgz
+		[ -f /sysupgrade.tgz ] && mv /sysupgrade.tgz /tmp/sysupgrade.tgz && tar xzf /tmp/sysupgrade.tgz
 		[ -f /tmp/sysupgrade.tar ] && tar xf /tmp/sysupgrade.tar
 		missing_lines /tmp/passwd /etc/passwd >> /etc/passwd
 		missing_lines /tmp/group /etc/group >> /etc/group
