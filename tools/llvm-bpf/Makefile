@@ -14,8 +14,6 @@ PKG_SOURCE_URL:=https://github.com/llvm/llvm-project/releases/download/llvmorg-$
 PKG_HASH:=74446ab6943f686391954cbda0d77ae92e8a60c432eff437b8666e121d748ec4
 PKG_CPE_ID:=cpe:/a:llvm:llvm
 
-HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/$(PKG_NAME)-$(PKG_VERSION).src
-
 CMAKE_BINARY_SUBDIR := build
 CMAKE_SOURCE_SUBDIR := llvm
 

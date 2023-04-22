@@ -16,7 +16,7 @@ PKG_SOURCE_URL:= \
 	ftp://ftp.denx.de/pub/u-boot
 PKG_HASH:=f591da9ab90ef3d6b3d173766d0ddff90c4ed7330680897486117df390d83c8f
 
-HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/u-boot-$(PKG_VERSION)
+HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/u-boot
 
 include $(INCLUDE_DIR)/host-build.mk
 

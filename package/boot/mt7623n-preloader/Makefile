@@ -13,8 +13,6 @@ PKG_RELEASE:=b27114e184449a33b5d875fda14198f5e6fee2bb
 
 PKG_MAINTAINER:=David Woodhouse <dwmw2@infradead.org>
 
-PKG_BUILD_DIR:=$(KERNEL_BUILD_DIR)/$(PKG_NAME)/$(PKG_NAME)-$(PKG_RELEASE)
-
 PKG_FLAGS:=nonshared
 
 include $(INCLUDE_DIR)/package.mk
