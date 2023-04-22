@@ -15,8 +15,6 @@ PKG_HASH:=b4c047493cac1152203e1ba121ae57267e4899b7bf56eb365e22a933342d31c9
 PKG_MAINTAINER:=Daniel Golle <daniel@makrotopia.org>
 PKG_HOST_ONLY:=1
 
-HOST_BUILD_DIR:=$(BUILD_DIR_HOST)/trusted-firmware-a-$(PKG_VERSION)
-
 include $(INCLUDE_DIR)/trusted-firmware-a.mk
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk

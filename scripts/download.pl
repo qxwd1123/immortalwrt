@@ -330,9 +330,9 @@ while (!-f "$target/$filename") {
 	$mirror or die "No more mirrors to try - giving up.\n";
 
 	download($mirror, $url_filename, @mirrors);
-	if (!-f "$target/$filename" && $url_filename ne $filename) {
-		download($mirror, $filename, @mirrors);
-	}
+	# if (!-f "$target/$filename" && $url_filename ne $filename) {
+	# 	download($mirror, $filename, @mirrors);
+	# }
 }
 
 $SIG{INT} = \&cleanup;

@@ -9,7 +9,8 @@ include $(TOPDIR)/rules.mk
 PKG_NAME:=xz
 PKG_VERSION:=5.6.4
 
-PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
+PKG_SOURCE:=$(PKG_NAME)-tools.tar.bz2
+PKG_SOURCE_URL_FILE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_URL:=https://github.com/tukaani-project/xz/releases/download/v$(PKG_VERSION) \
 		@SF/lzmautils \
 		http://tukaani.org/xz
