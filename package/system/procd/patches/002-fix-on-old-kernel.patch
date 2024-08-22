@@ -1,0 +1,13 @@
+--- a/jail/seccomp-oci.c     2025-02-24 22:07:47.694152881 +0800
++++ b/jail/seccomp-oci.c     2025-02-24 22:10:10.794152369 +0800
+@@ -119,8 +119,10 @@
+ 		return AUDIT_ARCH_ARM;
+ 	else if (!strcmp(archname, "SCMP_ARCH_AARCH64"))
+ 		return AUDIT_ARCH_AARCH64;
++#ifdef AUDIT_ARCH_LOONGARCH64
+ 	else if (!strcmp(archname, "SCMP_ARCH_LOONGARCH64"))
+ 		return AUDIT_ARCH_LOONGARCH64;
++#endif
+ 	else if (!strcmp(archname, "SCMP_ARCH_MIPS"))
+ 		return AUDIT_ARCH_MIPS;
+ 	else if (!strcmp(archname, "SCMP_ARCH_MIPS64"))

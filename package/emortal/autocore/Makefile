@@ -12,6 +12,8 @@ PKG_RELEASE:=42
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_TARGET_bcm27xx \
 	CONFIG_TARGET_bcm53xx \
+	CONFIG_TARGET_mediatek \
+	CONFIG_TARGET_mtk \
 	CONFIG_TARGET_x86
 
 include $(INCLUDE_DIR)/package.mk
@@ -23,7 +25,8 @@ define Package/autocore
     +TARGET_bcm27xx:bcm27xx-utils \
     +TARGET_bcm53xx:nvram \
     +TARGET_x86:ethtool \
-    +TARGET_x86:lm-sensors
+    +TARGET_x86:lm-sensors \
+    +(TARGET_mediatek||TARGET_mtk):mhz
 endef
 
 define Build/Compile
@@ -40,8 +43,13 @@ endif
 
 	$(INSTALL_DIR) $(1)/sbin
 	$(INSTALL_BIN) ./files/cpuinfo $(1)/sbin/
-ifneq ($(filter ipq% mediatek% qualcommax%, $(TARGETID)),)
+
+ifneq ($(filter ipq% mtk% mediatek% qualcommax%, $(TARGETID)),)
 	$(INSTALL_BIN) ./files/tempinfo $(1)/sbin/
+	$(INSTALL_BIN) ./files/ethinfo $(1)/sbin/
+
+	$(INSTALL_DIR) $(1)/www/luci-static/resources/view/status/include
+	$(INSTALL_DATA) ./files/21_ethinfo.js $(1)/www/luci-static/resources/view/status/include/
 endif
 
 	$(INSTALL_DIR) $(1)/usr/share/rpcd/acl.d

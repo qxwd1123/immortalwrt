@@ -25,26 +25,33 @@ sub version_to_num($) {
 sub version_filter_list(@) {
 	my $cmpver = version_to_num(shift @_);
 	my @items;
+	my $allowed = 1;
 
 	foreach my $item (@_)
 	{
-		if ($item =~ s/@(lt|le|gt|ge|eq|ne)(\d+(?:\.\d+)+)\b//)
-		{
-			my $op = $1;
-			my $symver = version_to_num($2);
-
-			if ($symver > 0 && $cmpver > 0)
+		while ($item =~ /@(lt|le|gt|ge|eq|ne)/) {
+			if ($item =~ s/@(lt|le|gt|ge|eq|ne)(\d+(?:\.\d+)+)\b//)
 			{
-				next unless (($op eq 'lt' && $cmpver <  $symver) ||
-				             ($op eq 'le' && $cmpver <= $symver) ||
-				             ($op eq 'gt' && $cmpver >  $symver) ||
-				             ($op eq 'ge' && $cmpver >= $symver) ||
-				             ($op eq 'eq' && $cmpver == $symver) ||
-				             ($op eq 'ne' && $cmpver != $symver));
+				my $op = $1;
+				my $symver = version_to_num($2);
+
+				if ($symver > 0 && $cmpver > 0)
+				{
+					if (!(($op eq 'lt' && $cmpver <  $symver) ||
+								($op eq 'le' && $cmpver <= $symver) ||
+								($op eq 'gt' && $cmpver >  $symver) ||
+								($op eq 'ge' && $cmpver >= $symver) ||
+								($op eq 'eq' && $cmpver == $symver) ||
+								($op eq 'ne' && $cmpver != $symver))) {
+						$allowed = 0;
+					}
+				}
 			}
 		}
 
-		push @items, $item;
+		if ($allowed) {
+			push @items, $item;
+		}
 	}
 
 	return @items;

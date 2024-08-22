@@ -12,6 +12,8 @@ PKG_NAME:=gpio-button-hotplug
 PKG_RELEASE:=5
 PKG_LICENSE:=GPL-2.0
 
+PATCH_DIR:=$(CURDIR)/patches-$(KERNEL_PATCHVER)
+
 include $(INCLUDE_DIR)/package.mk
 
 define KernelPackage/gpio-button-hotplug

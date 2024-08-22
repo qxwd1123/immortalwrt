@@ -246,7 +246,6 @@ comment "Engine/Hardware Support"
 
 config OPENSSL_ENGINE
 	bool "Enable engine support"
-	select OPENSSL_WITH_DEPRECATED
 	default y
 	help
 		This enables alternative cryptography implementations,

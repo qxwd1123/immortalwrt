@@ -39,8 +39,10 @@ define KernelPackage/crypto-aead
   TITLE:=CryptoAPI AEAD support
   KCONFIG:= \
 	CONFIG_CRYPTO_AEAD \
-	CONFIG_CRYPTO_AEAD2
-  FILES:=$(LINUX_DIR)/crypto/aead.ko
+	CONFIG_CRYPTO_AEAD2 \
+	CONFIG_CRYPTO_GENIV@ge5.15@lt6.6
+  FILES:=$(LINUX_DIR)/crypto/aead.ko \
+	     $(LINUX_DIR)/crypto/geniv.ko@ge5.15@lt6.6
   AUTOLOAD:=$(call AutoLoad,09,aead,1)
   $(call AddDepends/crypto, +kmod-crypto-null)
 endef
@@ -311,7 +313,9 @@ define KernelPackage/crypto-gf128
   KCONFIG:= \
 	CONFIG_CRYPTO_GF128MUL \
 	CONFIG_CRYPTO_LIB_GF128MUL
-  FILES:=$(LINUX_DIR)/lib/crypto/gf128mul.ko
+  FILES:= \
+	$(LINUX_DIR)/crypto/gf128mul.ko@lt6.2 \
+	$(LINUX_DIR)/lib/crypto/gf128mul.ko@ge6.2
   AUTOLOAD:=$(call AutoLoad,09,gf128mul)
   $(call AddDepends/crypto)
 endef
@@ -1055,7 +1059,7 @@ define KernelPackage/crypto-sha256
 endef
 
 define KernelPackage/crypto-sha256/aarch64
-  FILES+=$(LINUX_DIR)/arch/arm64/crypto/sha256-arm64.ko
+  FILES+=$(LINUX_DIR)/arch/arm64/crypto/sha256-arm64.ko@lt5.4
   AUTOLOAD+=$(call AutoLoad,09,sha256-arm64)
 endef
 
@@ -1112,12 +1116,12 @@ define KernelPackage/crypto-sha512
 endef
 
 define KernelPackage/crypto-sha512/arm
-  FILES+=$(LINUX_DIR)/arch/arm/crypto/sha512-arm.ko
+  FILES+=$(LINUX_DIR)/arch/arm/crypto/sha512-arm.ko@lt5.4
   AUTOLOAD+=$(call AutoLoad,09,sha512-arm)
 endef
 
 define KernelPackage/crypto-sha512/aarch64
-  FILES+=$(LINUX_DIR)/arch/arm64/crypto/sha512-arm64.ko
+  FILES+=$(LINUX_DIR)/arch/arm64/crypto/sha512-arm64.ko@lt5.4
   AUTOLOAD+=$(call AutoLoad,09,sha512-arm64)
 endef
 
