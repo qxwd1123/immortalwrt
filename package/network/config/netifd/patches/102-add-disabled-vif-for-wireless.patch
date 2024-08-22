@@ -1,0 +1,61 @@
+--- a/wireless.c
++++ b/wireless.c
+@@ -1124,15 +1124,15 @@
+ {
+ 	struct wireless_station *sta;
+ 	struct blob_attr *tb[__STA_ATTR_MAX];
+-	struct blob_attr *cur;
++	// struct blob_attr *cur;
+ 	char *name_buf;
+ 	char name[8];
+
+ 	blobmsg_parse_attr(sta_policy, __STA_ATTR_MAX, tb, data);
+
+-	cur = tb[STA_ATTR_DISABLED];
+-	if (cur && blobmsg_get_bool(cur))
+-		return;
++	// cur = tb[STA_ATTR_DISABLED];
++	// if (cur && blobmsg_get_bool(cur))
++	//	return;
+
+ 	sprintf(name, "%d", vif->sta_idx++);
+
+@@ -1164,15 +1164,15 @@
+ {
+ 	struct wireless_vlan *vlan;
+ 	struct blob_attr *tb[__VLAN_ATTR_MAX];
+-	struct blob_attr *cur;
++	// struct blob_attr *cur;
+ 	char *name_buf;
+ 	char name[8];
+
+ 	blobmsg_parse_attr(vlan_policy, __VLAN_ATTR_MAX, tb, data);
+
+-	cur = tb[VLAN_ATTR_DISABLED];
+-	if (cur && blobmsg_get_bool(cur))
+-		return;
++	// cur = tb[VLAN_ATTR_DISABLED];
++	// if (cur && blobmsg_get_bool(cur))
++	//	return;
+
+ 	sprintf(name, "%d", vif->vlan_idx++);
+
+@@ -1204,15 +1204,15 @@
+ {
+ 	struct wireless_interface *vif;
+ 	struct blob_attr *tb[__VIF_ATTR_MAX];
+-	struct blob_attr *cur;
++	// struct blob_attr *cur;
+ 	char *name_buf;
+ 	char name[8];
+
+ 	blobmsg_parse_attr(vif_policy, __VIF_ATTR_MAX, tb, data);
+
+-	cur = tb[VIF_ATTR_DISABLED];
+-	if (cur && blobmsg_get_bool(cur))
+-		return NULL;
++	// cur = tb[VIF_ATTR_DISABLED];
++	// if (cur && blobmsg_get_bool(cur))
++	//	return NULL;
+
+ 	sprintf(name, "%d", wdev->vif_idx++);

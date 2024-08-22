@@ -27,6 +27,7 @@ PKG_CONFIG_DEPENDS += \
 	CONFIG_EMMC_SUPPORT \
 	CONFIG_CLEAN_IPKG \
 	CONFIG_PER_FEED_REPO \
+	CONFIG_PACKAGE_wifi-profile \
 	$(foreach feed,$(FEEDS_AVAILABLE),CONFIG_FEED_$(feed))
 
 include $(INCLUDE_DIR)/package.mk
@@ -264,6 +265,9 @@ else
 	$(if $(CONFIG_IPK_FILES_CHECKSUMS),, \
 		rm -f $(1)/sbin/pkg_check)
 endif
+
+	$(if $(CONFIG_PACKAGE_wifi-profile), \
+		rm -f $(1)/sbin/wifi)
 endef
 
 ifneq ($(DUMP),1)
