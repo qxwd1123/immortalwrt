@@ -37,6 +37,7 @@ tools-y += bc
 tools-y += bison
 tools-y += cmake
 tools-y += cpio
+tools-y += crc32sum
 tools-y += dosfstools
 tools-y += e2fsprogs
 tools-y += elfutils

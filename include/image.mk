@@ -151,6 +151,7 @@ endif
 
 
 # Disable noisy checks by default as in upstream
+ifneq ($(KERNEL_PATCHVER),5.4)
 DTC_WARN_FLAGS := \
   -Wno-interrupt_provider \
   -Wno-unique_unit_address \
@@ -159,6 +160,15 @@ DTC_WARN_FLAGS := \
   -Wno-alias_paths \
   -Wno-graph_child_address \
   -Wno-simple_bus_reg
+else
+DTC_WARN_FLAGS := \
+  -Wno-unique_unit_address \
+  -Wno-unit_address_vs_reg \
+  -Wno-avoid_unnecessary_addr_size \
+  -Wno-alias_paths \
+  -Wno-graph_child_address \
+  -Wno-simple_bus_reg
+endif
 
 DTC_FLAGS += $(DTC_WARN_FLAGS)
 DTCO_FLAGS += $(DTC_WARN_FLAGS)
@@ -647,6 +657,16 @@ define Device/Build/kernel
     ifdef CONFIG_IB
       install: $$(KDIR_KERNEL_IMAGE)
     endif
+    ifneq ($$(filter squashfs,$(2)),)
+      # Force squashfs to be built before generating kernel image
+      ROOTFS/squashfs/$(1) := \
+	$(KDIR)/root.squashfs$$(strip \
+		$$(if $$(FS_OPTIONS/squashfs),+fs=$$(call param_mangle,$$(FS_OPTIONS/squashfs))) \
+	)$$(strip \
+		$(if $(TARGET_PER_DEVICE_ROOTFS),+pkg=$$(ROOTFS_ID/$(1))) \
+	)
+      $$(KDIR_KERNEL_IMAGE): $$(ROOTFS/squashfs/$(1))
+    endif
     $$(KDIR_KERNEL_IMAGE): $(KDIR)/$$(KERNEL_NAME) $(CURDIR)/Makefile $$(KERNEL_DEPENDS) image_prepare
 	@rm -f $$@
 	$$(call concat_cmd,$$(KERNEL))
@@ -783,7 +803,7 @@ endef
 
 define Device/Build
   $(if $(CONFIG_TARGET_ROOTFS_INITRAMFS),$$(eval $$(call Device/Build/initramfs,$(1))))
-  $(call Device/Build/kernel,$(1))
+  $(call Device/Build/kernel,$(1),$$(filter $(TARGET_FILESYSTEMS),$$(FILESYSTEMS)))
 
   $$(eval $$(foreach compile,$$(COMPILE), \
     $$(call Device/Build/compile,$$(compile),$(1))))

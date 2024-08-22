@@ -19,6 +19,7 @@ usage() {
 	printf " -v version -k kernel [-D name -n address -d dtb] -o its_file"
 
 	printf "\n\t-A ==> set architecture to 'arch'"
+	printf "\n\t-b ==> set anti-rollback version to 'fw_ar_ver' (dec)"
 	printf "\n\t-C ==> set compression type 'comp'"
 	printf "\n\t-c ==> set config name 'config'"
 	printf "\n\t-a ==> set load address to 'addr' (hex)"
@@ -31,11 +32,15 @@ usage() {
 	printf "\n\t-n ==> fdt unit-address 'address'"
 	printf "\n\t-d ==> include Device Tree Blob 'dtb'"
 	printf "\n\t-r ==> include RootFS blob 'rootfs'"
+	printf "\n\t-R ==> specify rootfs file for embedding hash"
 	printf "\n\t-H ==> specify hash algo instead of SHA1"
 	printf "\n\t-l ==> legacy mode character (@ etc otherwise -)"
+	printf "\n\t-L ==> set FDT load address to 'addr' (hex)"
 	printf "\n\t-o ==> create output file 'its_file'"
 	printf "\n\t-O ==> create config with dt overlay 'name:dtb'"
-	printf "\n\t-s ==> set FDT load address to 'addr' (hex)"
+	printf "\n\t-s ==> include u-boot script 'script'"
+	printf "\n\t-S ==> add signature at configurations and assign its key_name_hint by 'key_name_hint'"
+
 	printf "\n\t\t(can be specified more than once)\n"
 	exit 1
 }
@@ -49,11 +54,12 @@ LOADABLES=
 DTOVERLAY=
 DTADDR=
 
-while getopts ":A:a:c:C:D:d:e:f:i:k:l:n:o:O:v:r:s:H:" OPTION
+while getopts ":A:a:b:c:C:D:d:e:f:i:k:l:L:n:o:O:v:r:R:s:S:H:" OPTION
 do
 	case $OPTION in
 		A ) ARCH=$OPTARG;;
 		a ) LOAD_ADDR=$OPTARG;;
+		b ) AR_VER=$OPTARG;;
 		c ) CONFIG=$OPTARG;;
 		C ) COMPRESS=$OPTARG;;
 		D ) DEVICE=$OPTARG;;
@@ -67,7 +73,10 @@ do
 		o ) OUTPUT=$OPTARG;;
 		O ) DTOVERLAY="$DTOVERLAY ${OPTARG}";;
 		r ) ROOTFS=$OPTARG;;
-		s ) FDTADDR=$OPTARG;;
+		R ) ROOTFS_FILE=$OPTARG;;
+		s ) UBOOT_SCRIPT=$OPTARG;;
+		S ) KEY_NAME_HINT=$OPTARG;;
+		L ) FDTADDR=$OPTARG;;
 		H ) HASH=$OPTARG;;
 		v ) VERSION=$OPTARG;;
 		* ) echo "Invalid option passed to '$0' (options:$*)"
@@ -192,12 +201,94 @@ OVCONFIGS=""
 	"
 done
 
+# Conditionally create rootfs hash information
+if [ -f "${ROOTFS_FILE}" ]; then
+	ROOTFS_SIZE=$(stat -c %s ${ROOTFS_FILE})
+
+	ROOTFS_SHA1=$(sha1sum ${ROOTFS_FILE} | awk '{print "<0x"substr($0,1,8) " 0x"substr($0,9,8) " 0x"substr($0,17,8) " 0x"substr($0,25,8) " 0x"substr($0,33,8) ">"}')
+	ROOTFS_CRC32=$(crc32sum ${ROOTFS_FILE})
+
+	ROOTFS="
+	rootfs {
+		size = <${ROOTFS_SIZE}>;
+
+		hash-1 {
+			value = <0x${ROOTFS_CRC32}>;
+			algo = \"crc32\";
+		};
+
+		hash-2 {
+			value = ${ROOTFS_SHA1};
+			algo = \"sha1\";
+		};
+	};
+"
+
+	ROOTFS_EXTRA_INFO="
+	rootfs_crc32 = \"${ROOTFS_CRC32}\";
+	rootfs_size = \"${ROOTFS_SIZE}\";
+	image_time = \"$(date +%s)\";
+"
+fi
+
+# Conditionally create script information
+if [ -n "${UBOOT_SCRIPT}" ]; then
+	SCRIPT="\
+		script-1 {
+			description = \"U-Boot Script\";
+			data = /incbin/(\"${UBOOT_SCRIPT}\");
+			type = \"script\";
+			arch = \"${ARCH}\";
+			os = \"linux\";
+			load = <0>;
+			entry = <0>;
+			compression = \"none\";
+			hash-1 {
+				algo = \"crc32\";
+			};
+			hash-2 {
+				algo = \"sha1\";
+			};
+		};\
+"
+	LOADABLES="\
+			loadables = \"script-1\";\
+"
+	SIGN_IMAGES="\
+				sign-images = \"fdt\", \"kernel\", \"loadables\";\
+"
+else
+	SIGN_IMAGES="\
+				sign-images = \"fdt\", \"kernel\";\
+"
+fi
+
+# Conditionally create signature information
+if [ -n "${KEY_NAME_HINT}" ]; then
+	SIGNATURE="\
+			signature {
+				algo = \"sha1,rsa2048\";
+				key-name-hint = \"${KEY_NAME_HINT}\";
+${SIGN_IMAGES}
+			};\
+"
+fi
+
+# Conditionally create anti-rollback version information
+if [ -n "${AR_VER}" ]; then
+	FW_AR_VER="\
+			fw_ar_ver = <${AR_VER}>;\
+"
+fi
+
 # Create a default, fully populated DTS file
 DATA="/dts-v1/;
 
 / {
 	description = \"${ARCH_UPPER} OpenWrt FIT (Flattened Image Tree)\";
 	#address-cells = <1>;
+
+${ROOTFS_EXTRA_INFO}
 
 	images {
 		kernel${REFERENCE_CHAR}1 {
@@ -220,17 +311,22 @@ ${INITRD_NODE}
 ${FDT_NODE}
 ${FDTOVERLAY_NODE}
 ${ROOTFS_NODE}
+${SCRIPT}
 	};
 
+${ROOTFS}
 	configurations {
 		default = \"${CONFIG}\";
 		${CONFIG} {
 			description = \"OpenWrt ${DEVICE}\";
+${FW_AR_VER}
+${LOADABLES}
 			kernel = \"kernel${REFERENCE_CHAR}1\";
 			${FDT_PROP}
 			${LOADABLES:+loadables = ${LOADABLES};}
 			${COMPATIBLE_PROP}
 			${INITRD_PROP}
+${SIGNATURE}
 		};
 		${OVCONFIGS}
 	};
