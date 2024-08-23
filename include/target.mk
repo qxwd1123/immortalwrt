@@ -262,32 +262,32 @@ ifeq ($(DUMP),1)
     CPU_TYPE ?= xscale
   endif
   ifeq ($(ARCH),powerpc)
-    CPU_CFLAGS_603e:=-mcpu=603e
-    CPU_CFLAGS_8540:=-mcpu=8540
-    CPU_CFLAGS_8548:=-mcpu=8548
-    CPU_CFLAGS_405:=-mcpu=405
-    CPU_CFLAGS_440:=-mcpu=440
-    CPU_CFLAGS_464fp:=-mcpu=464fp
+    CPU_CFLAGS_603e:=-mtune=603e
+    CPU_CFLAGS_8540:=-mtune=8540
+    CPU_CFLAGS_8548:=-mtune=8548
+    CPU_CFLAGS_405:=-mtune=405
+    CPU_CFLAGS_440:=-mtune=440
+    CPU_CFLAGS_464fp:=-mtune=464fp
   endif
   ifeq ($(ARCH),powerpc64)
     CPU_TYPE ?= powerpc64
-    CPU_CFLAGS_e5500:=-mcpu=e5500
-    CPU_CFLAGS_powerpc64:=-mcpu=powerpc64
+    CPU_CFLAGS_e5500:=-mtune=e5500
+    CPU_CFLAGS_powerpc64:=-mtune=powerpc64
   endif
   ifeq ($(ARCH),sparc)
     CPU_TYPE = sparc
-    CPU_CFLAGS_ultrasparc = -mcpu=ultrasparc
+    CPU_CFLAGS_ultrasparc = -mtune=ultrasparc
   endif
   ifeq ($(ARCH),aarch64)
     CPU_TYPE ?= generic
-    CPU_CFLAGS_generic = -mcpu=generic
-    CPU_CFLAGS_cortex-a53 = -mcpu=cortex-a53
+    CPU_CFLAGS_generic = -mtune=generic
+    CPU_CFLAGS_cortex-a53 = -mtune=cortex-a53
   endif
   ifeq ($(ARCH),arc)
     CPU_TYPE ?= arc700
     CPU_CFLAGS += -matomic
-    CPU_CFLAGS_arc700 = -mcpu=arc700
-    CPU_CFLAGS_archs = -mcpu=archs
+    CPU_CFLAGS_arc700 = -mtune=arc700
+    CPU_CFLAGS_archs = -mtune=archs
   endif
   ifeq ($(ARCH),riscv64)
     CPU_TYPE ?= riscv64
