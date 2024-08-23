@@ -293,10 +293,9 @@ export HOSTCC_NOCACHE
 export HOSTCXX_NOCACHE
 
 ifneq ($(CONFIG_CCACHE),)
-  TARGET_CC:= ccache $(TARGET_CC)
-  TARGET_CXX:= ccache $(TARGET_CXX)
-  HOSTCC:= ccache $(HOSTCC)
-  HOSTCXX:= ccache $(HOSTCXX)
+  CCACHE_BIN_PATH:=$(STAGING_DIR_HOST)/lib/ccache/bin
+  TARGET_PATH:=$(subst $(space),:,$(CCACHE_BIN_PATH)):$(TARGET_PATH)
+  export PATH:=$(TARGET_PATH)
   export CCACHE_BASEDIR:=$(TOPDIR)
   export CCACHE_DIR:=$(if $(call qstrip,$(CONFIG_CCACHE_DIR)),$(call qstrip,$(CONFIG_CCACHE_DIR)),$(TOPDIR)/.ccache)
   export CCACHE_COMPILERCHECK:=%compiler% -dumpmachine; %compiler% -dumpversion
