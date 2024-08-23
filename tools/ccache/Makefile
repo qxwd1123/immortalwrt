@@ -25,4 +25,11 @@ CMAKE_HOST_OPTIONS += \
 	-DREDIS_STORAGE_BACKEND=OFF \
 	-DENABLE_TESTING=OFF
 
+define Host/Install
+	$(call Host/Install/Default,$(HOST_BUILD_PREFIX))
+	mkdir -p $(STAGING_DIR_HOST)/lib/ccache/bin
+	$(LN) $(STAGING_DIR_HOST)/bin/ccache $(STAGING_DIR_HOST)/lib/ccache/bin/$(TARGET_CC)
+	$(LN) $(STAGING_DIR_HOST)/bin/ccache $(STAGING_DIR_HOST)/lib/ccache/bin/$(TARGET_CXX)
+endef
+
 $(eval $(call HostBuild))
