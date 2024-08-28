@@ -7,7 +7,7 @@ append DRIVERS "mtwifi"
 
 detect_mtwifi() {
 	local idx ifname
-	local band hwmode htmode htbsscoex ssid dbdc_main
+	local band hwmode htmode htbsscoex ssid dbdc_main channel
 	if [ -d "/sys/module/mt_wifi" ]; then
 		dev_list="$(l1util list)"
 		for dev in $dev_list; do

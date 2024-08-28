@@ -9,6 +9,9 @@ msgstr ""
 msgid "Download speed (Mbit/s)"
 msgstr ""
 
+msgid "Download speed (kbit/s)"
+msgstr ""
+
 #: applications/luci-app-eqos/htdocs/luci-static/resources/view/eqos.js:18
 #: applications/luci-app-eqos/root/usr/share/luci/menu.d/luci-app-eqos.json:3
 msgid "EQoS"
@@ -17,6 +20,13 @@ msgstr ""
 #: applications/luci-app-eqos/htdocs/luci-static/resources/view/eqos.js:24
 #: applications/luci-app-eqos/htdocs/luci-static/resources/view/eqos.js:43
 msgid "Enable"
+msgstr ""
+
+msgid ""
+"Enabling fair queue will automatically perform hardware offloading and "
+"forwarding for small packets, P2P downloads, and web browsing. After "
+"enabling, the maximum number available for IP speed limit will be limited to "
+"25."
 msgstr ""
 
 msgid "IPV6Enable"
@@ -30,12 +40,36 @@ msgstr ""
 msgid "IPV4 address"
 msgstr ""
 
+msgid "IPV6 host"
+msgstr ""
+
+msgid "IPV6Enable"
+msgstr ""
+
+msgid "InterfaceName(start from 0)"
+msgstr ""
+
+msgid "Load balance"
+msgstr ""
+
 #: applications/luci-app-eqos/htdocs/luci-static/resources/view/eqos.js:19
-msgid "Network speed control service."
+msgid "Network speed control service.(Compatiable with Mediatek HNAT)"
+msgstr ""
+
+msgid ""
+"Please set a different gateway hop for each network interface before filling "
+"in the network interface name. Fill in PPPOE-WAN for dialing and eth1 for "
+"DHCP. Leaving it blank to disable it.Please use commas as interface name "
+"separators. Example: pppoe-wan,eth1"
 msgstr ""
 
 #: applications/luci-app-eqos/htdocs/luci-static/resources/view/eqos.js:38
-msgid "Speed limit based on IP address(using unique comment less than 32 will enable hardware QOS"
+msgid "SMART_HWQOS"
+msgstr ""
+
+msgid ""
+"Speed limit and route choose based on IP address(using unique comment less "
+"than 32 will enable hardware QOS)"
 msgstr ""
 
 #: applications/luci-app-eqos/htdocs/luci-static/resources/view/eqos.js:29

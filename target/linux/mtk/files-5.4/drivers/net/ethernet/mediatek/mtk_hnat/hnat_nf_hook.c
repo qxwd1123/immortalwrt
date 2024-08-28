@@ -282,7 +282,7 @@ int nf_hnat_netdevice_event(struct notifier_block *unused, unsigned long event,
 
 	switch (event) {
 	case NETDEV_UP:
-		if (!hnat_priv->guest_en && dev != NULL) {
+		if (!hnat_priv->guest_en) {
 			if (!strcmp(dev->name, "ra1") || !strcmp(dev->name, "rax1"))
 				break;
 		}
@@ -848,6 +848,70 @@ static unsigned int is_ppe_support_type(struct sk_buff *skb)
 	}
 
 	return 0;
+}
+
+static void mtk_hnat_nf_update(struct sk_buff *skb)
+{
+	struct nf_conn *ct;
+	struct nf_conn_acct *acct;
+	struct nf_conn_counter *counter;
+	enum ip_conntrack_info ctinfo;
+	struct hnat_accounting diff;
+	
+	if (skb->protocol == htons(ETH_P_IPV6) && !hnat_priv->ipv6_en) {
+		return ;
+	}
+
+	if (skb_hnat_alg(skb) || unlikely(!is_magic_tag_valid(skb) ||
+					  !IS_SPACE_AVAILABLE_HEAD(skb)))
+		return ;
+
+	if (unlikely(!skb_mac_header_was_set(skb)))
+		return ;
+
+	if (unlikely(!skb_hnat_is_hashed(skb)))
+		return ;
+		
+	if (unlikely(skb->mark == HNAT_EXCEPTION_TAG))
+		return ;
+ 
+	ct = nf_ct_get(skb, &ctinfo);
+	if (ct) {
+		if (!hnat_get_count(hnat_priv, skb_hnat_ppe(skb), skb_hnat_entry(skb), &diff))
+			return;
+
+		acct = nf_conn_acct_find(ct);
+		
+		if (acct) {
+			counter = acct->counter;
+			atomic64_add(diff.packets, &counter[CTINFO2DIR(ctinfo)].packets);
+			atomic64_add(diff.bytes, &counter[CTINFO2DIR(ctinfo)].bytes);
+			atomic64_set(&counter[CTINFO2DIR(ctinfo)].diff_packets, diff.packets);
+			atomic64_set(&counter[CTINFO2DIR(ctinfo)].diff_bytes, diff.bytes);
+		}
+	}
+}
+
+
+/* update hnat count to nf_conntrack and iptables by keepalive */
+static unsigned int
+mtk_hnat_nf_conntrack(void *priv, struct sk_buff *skb,
+			     const struct nf_hook_state *state)
+{
+	if (!skb)
+		goto drop;
+	
+	if (unlikely(skb_hnat_reason(skb) == HIT_BIND_KEEPALIVE_DUP_OLD_HDR))
+		{
+		if (hnat_priv->data->per_flow_accounting && hnat_priv->nf_stat_en)
+			mtk_hnat_nf_update(skb);}
+		
+	return NF_ACCEPT;
+	
+drop:
+	
+	return NF_DROP;	
+
 }
 
 static unsigned int
@@ -1651,6 +1715,9 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 			gmac = ((skb_hnat_entry(skb) >> 1) % hnat_priv->gmac_num) ?
 				 NR_GMAC2_PORT : NR_GMAC1_PORT;
 		else {
+			if (of_machine_is_compatible("glinet,mt2500-emmc")||of_machine_is_compatible("glinet,mt3000-snand"))
+				gmac = NR_GMAC2_PORT;
+			else
 				gmac = NR_GMAC1_PORT;
 		}
 	} else if (IS_WAN(dev)) {
@@ -1663,6 +1730,9 @@ static unsigned int skb_to_hnat_info(struct sk_buff *skb,
 			/* Set act_dp = wan_dev */
 			entry.ipv4_hnapt.act_dp = dev->ifindex;
 		} else {
+			if (of_machine_is_compatible("glinet,mt2500-emmc")||of_machine_is_compatible("glinet,mt3000-snand"))
+				gmac = NR_GMAC1_PORT;
+			else
 				gmac = (IS_GMAC1_MODE) ? NR_GMAC1_PORT : NR_GMAC2_PORT;
 		}
 	} else if (IS_EXT(dev) && (FROM_GE_PPD(skb) || FROM_GE_LAN(skb) ||
@@ -1992,7 +2062,7 @@ void mtk_ppe_dev_register_hook(struct net_device *dev)
 	int i, number = 0;
 	struct extdev_entry *ext_entry;
 
-	if (!hnat_priv->guest_en && dev != NULL) {
+	if (!hnat_priv->guest_en) {
 		if (!strcmp(dev->name, "ra1") || !strcmp(dev->name, "rax1"))
 			return;
 	}
@@ -2114,28 +2184,6 @@ static void mtk_hnat_dscp_update(struct sk_buff *skb, struct foe_entry *entry)
 	}
 }
 
-static void mtk_hnat_nf_update(struct sk_buff *skb)
-{
-	struct nf_conn *ct;
-	struct nf_conn_acct *acct;
-	struct nf_conn_counter *counter;
-	enum ip_conntrack_info ctinfo;
-	struct hnat_accounting diff;
-
-	ct = nf_ct_get(skb, &ctinfo);
-	if (ct) {
-		if (!hnat_get_count(hnat_priv, skb_hnat_ppe(skb), skb_hnat_entry(skb), &diff))
-			return;
-
-		acct = nf_conn_acct_find(ct);
-		if (acct) {
-			counter = acct->counter;
-			atomic64_add(diff.packets, &counter[CTINFO2DIR(ctinfo)].packets);
-			atomic64_add(diff.bytes, &counter[CTINFO2DIR(ctinfo)].bytes);
-		}
-	}
-}
-
 static unsigned int mtk_hnat_nf_post_routing(
 	struct sk_buff *skb, const struct net_device *out,
 	unsigned int (*fn)(struct sk_buff *, const struct net_device *,
@@ -2173,10 +2221,11 @@ static unsigned int mtk_hnat_nf_post_routing(
 	if (!IS_LAN(out) && !IS_WAN(out) && !IS_EXT(out))
 		return 0;
 
-#if defined(CONFIG_MEDIATEK_NETSYS_RX_V2)
+	#if defined(CONFIG_MEDIATEK_NETSYS_RX_V2)
 	if (!IS_WHNAT(out) && IS_EXT(out) && FROM_WED(skb))
 		return 0;
-#endif
+	#endif
+
 
 	trace_printk("[%s] case hit, %x-->%s, reason=%x\n", __func__,
 		     skb_hnat_iface(skb), out->name, skb_hnat_reason(skb));
@@ -2197,10 +2246,6 @@ static unsigned int mtk_hnat_nf_post_routing(
 		skb_to_hnat_info(skb, out, entry, &hw_path);
 		break;
 	case HIT_BIND_KEEPALIVE_DUP_OLD_HDR:
-		/* update hnat count to nf_conntrack by keepalive */
-		if (hnat_priv->data->per_flow_accounting && hnat_priv->nf_stat_en)
-			mtk_hnat_nf_update(skb);
-
 		if (fn && !mtk_hnat_accel_type(skb))
 			break;
 
@@ -2466,6 +2511,18 @@ static unsigned int mtk_hnat_br_nf_forward(void *priv,
 }
 
 static struct nf_hook_ops mtk_hnat_nf_ops[] __read_mostly = {
+	{
+		.hook = mtk_hnat_nf_conntrack,
+		.pf = NFPROTO_IPV4,
+		.hooknum = NF_INET_PRE_ROUTING,
+		.priority = NF_IP_PRI_MANGLE-1,
+	},
+	{
+		.hook = mtk_hnat_nf_conntrack,
+		.pf = NFPROTO_IPV6,
+		.hooknum = NF_INET_PRE_ROUTING,
+		.priority = NF_IP_PRI_MANGLE-1,
+	},
 	{
 		.hook = mtk_hnat_ipv4_nf_pre_routing,
 		.pf = NFPROTO_IPV4,
