@@ -58,3 +58,21 @@ define KernelPackage/mediatek_hnat/description
 endef
 
 $(eval $(call KernelPackage,mediatek_hnat))
+
+
+define KernelPackage/aquantia_aqtion
+  SUBMENU:=Network Devices
+  TITLE:=Aquantia AQtion(tm) Ethernet driver module
+  DEPENDS:=@TARGET_mediatek
+  KCONFIG:= \
+	CONFIG_NET_VENDOR_AQUANTIA=y \
+	CONFIG_AQTION
+  FILES:= \
+        $(LINUX_DIR)/drivers/net/ethernet/aquantia/atlantic/atlantic.ko
+endef
+
+define KernelPackage/aquantia_aqtion/description
+  Kernel modules for Aquantia AQtion(tm) Ethernet PCIe card driver
+endef
+
+$(eval $(call KernelPackage,aquantia_aqtion))

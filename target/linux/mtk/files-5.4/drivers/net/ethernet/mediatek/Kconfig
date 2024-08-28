@@ -19,12 +19,14 @@ config MEDIATEK_NETSYS_V2
 	 depends on ARCH_MEDIATEK && NET_MEDIATEK_SOC
 	---help---
 	  This options enable MTK Ethernet NETSYS V2 support
-
+	  
 config MEDIATEK_NETSYS_RX_V2
-	tristate "MediaTek Ethernet NETSYS RX V2 support"
+	tristate "MediaTek Ethernet NETSYS RX_V2 support"
 	 depends on ARCH_MEDIATEK && NET_MEDIATEK_SOC
 	---help---
-	  This options enable MTK Ethernet NETSYS RX V2 support
+	  This options enable MTK Ethernet NETSYS RX_V2 support
+	  
+
 
 config NET_MEDIATEK_HNAT
 	tristate "MediaTek HW NAT support"
