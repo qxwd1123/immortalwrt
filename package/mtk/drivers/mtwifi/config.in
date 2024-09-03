@@ -1,0 +1,31 @@
+menu "MTWIFI Configuration"
+	depends on PACKAGE_mtwifi
+
+config RALINK_CHIP_MT7603E_MT7612E
+	bool "RALINK_CHIP_MT7603E_MT7612E"
+	default y if PACKAGE_kmod-mt7603e && PACKAGE_kmod-mt76x2e
+	default n
+
+config RALINK_CHIP_MT7603E_MT7615E
+	bool "RALINK_CHIP_MT7603E_MT7615E"
+	default y if PACKAGE_kmod-mt7603e && PACKAGE_kmod-mt7615d
+	default n
+
+config RALINK_CHIP_MT7615E
+	bool "RALINK_CHIP_MT7615E"
+	default y if PACKAGE_kmod-mt7615d && !PACKAGE_kmod-mt7603e
+	default n
+
+config RALINK_CHIP_MT7615E_DBDC
+	bool "RALINK_CHIP_MT7615E_DBDC"
+	depends on RALINK_CHIP_MT7615E
+	default y if TARGET_ramips_mt7621_DEVICE_jcg_y2
+	default y if TARGET_ramips_mt7621_DEVICE_phicomm_k2p
+	default n
+
+config RALINK_CHIP_MT7915E_DBDC
+	bool "RALINK_CHIP_MT7915E_DBDC"
+	default y if PACKAGE_kmod-mt7915d
+	default n
+
+endmenu
