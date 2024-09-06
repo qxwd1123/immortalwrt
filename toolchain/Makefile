@@ -48,7 +48,7 @@ endif
 
 ifndef DUMP_TARGET_DB
 ifneq ($(ARCH),)
-  $(TOOLCHAIN_DIR)/info.mk: .config
+  $(TOOLCHAIN_DIR)/info.mk: .config${TASKNAME_SUFFIX}
 	@for dir in $(TOOLCHAIN_DIR); do ( \
 		$(if $(QUIET),,set -x;) \
 		mkdir -p "$$dir"; \
@@ -77,7 +77,7 @@ endif
 endif
 
 # prerequisites for the individual targets
-$(curdir)/ := .config prereq
+$(curdir)/ := .config${TASKNAME_SUFFIX} prereq
 $(curdir)//compile = $(STAGING_DIR)/.prepared $(TOOLCHAIN_DIR)/info.mk $(tools/stamp-compile)
 
 ifndef DUMP_TARGET_DB

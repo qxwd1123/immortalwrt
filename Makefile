@@ -8,6 +8,12 @@ LANG:=C
 TZ:=UTC
 export TOPDIR LC_ALL LANG TZ
 
+ifneq (${TASKNAME},)
+TASKNAME_SUFFIX:=_${TASKNAME}
+else
+TASKNAME_SUFFIX:=
+endif
+
 empty:=
 space:= $(empty) $(empty)
 $(if $(findstring $(space),$(TOPDIR)),$(error ERROR: The path to the OpenWrt directory must not include any spaces))
@@ -82,7 +88,7 @@ $(BUILD_DIR)/.prepared: Makefile
 	@mkdir -p $$(dirname $@)
 	@touch $@
 
-tmp/.prereq_packages: .config
+tmp/${TASKNAME}/.prereq_packages: .config${TASKNAME_SUFFIX}
 	unset ERROR; \
 	for package in $(sort $(prereq-y) $(prereq-m)); do \
 		$(_SINGLE)$(NO_TRACE_MAKE) -s -r -C package/$$package prereq || ERROR=1; \
@@ -95,7 +101,7 @@ tmp/.prereq_packages: .config
 endif
 
 # check prerequisites before starting to build
-prereq: $(target/stamp-prereq) tmp/.prereq_packages
+prereq: $(target/stamp-prereq) tmp/${TASKNAME}/.prereq_packages
 	@if [ ! -f "$(INCLUDE_DIR)/site/$(ARCH)" ]; then \
 		echo 'ERROR: Missing site config for architecture "$(ARCH)" !'; \
 		echo '       The missing file will cause configure scripts to fail during compilation.'; \
@@ -127,7 +133,7 @@ diffconfig: FORCE
 buildinfo: FORCE
 	$(_SINGLE)$(SUBMAKE) -r diffconfig buildversion feedsversion
 
-prepare: .config $(tools/stamp-compile) $(toolchain/stamp-compile)
+prepare: .config${TASKNAME_SUFFIX} $(tools/stamp-compile) $(toolchain/stamp-compile)
 	$(_SINGLE)$(SUBMAKE) -r buildinfo
 
 world: prepare $(target/stamp-compile) $(package/stamp-compile) $(package/stamp-install) $(target/stamp-install) FORCE

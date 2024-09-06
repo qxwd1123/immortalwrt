@@ -41,7 +41,7 @@ sub localmirrors {
 		}
 		close LM;
 	};
-	open CONFIG, "<".$ENV{'TOPDIR'}."/.config" and do {
+	open CONFIG, "<".$ENV{'TOPDIR'}."/.config$ENV{'TASKNAME_SUFFIX'}" and do {
 		while (<CONFIG>) {
 			/^CONFIG_LOCALMIRROR="(.+)"/ and do {
 				chomp;
