@@ -1,4 +1,4 @@
-source "tmp/.config-target.in"
+source "tmp/$(TASKNAME)/.target.in"
 
 # Kernel/Hardware features
 

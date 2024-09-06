@@ -87,7 +87,7 @@ test_package() # $1=pkgname
 		die "Package name \"$pkg\" contains illegal characters"
 	local SELECTED=
 	for conf in `grep CONFIG_PACKAGE tmp/.packagedeps | grep -E "[ /]$pkg\$" | sed -e 's,package-$(\(CONFIG_PACKAGE_.*\)).*,\1,'`; do
-		grep "$conf=" .config > /dev/null && SELECTED=1 && break
+		grep "$conf=" .config${TASKNAME_SUFFIX} > /dev/null && SELECTED=1 && break
 	done
 	local STAMP_SUCCESS="$STAMP_DIR_SUCCESS/$pkg"
 	local STAMP_FAILED="$STAMP_DIR_FAILED/$pkg"
@@ -156,7 +156,7 @@ done
 
 [ -f "$BASEDIR/include/toplevel.mk" ] || \
 	die "Error: Could not find buildsystem base directory"
-[ -f "$BASEDIR/.config" ] || \
+[ -f "$BASEDIR/.config${TASKNAME_SUFFIX}" ] || \
 	die "The buildsystem is not configured. Please run make menuconfig."
 cd "$BASEDIR" || die "Failed to enter base directory"
 
