@@ -1,5 +1,5 @@
 #!/bin/sh
-eval "$(grep CONFIG_GCC_VERSION .config)"
+eval "$(grep CONFIG_GCC_VERSION .config${TASKNAME_SUFFIX})"
 CONFIG_TOOLCHAIN_BUILD_VER="$CONFIG_GCC_VERSION-$(cat toolchain/build_version)"
 touch .toolchain_build_ver
 CURRENT_TOOLCHAIN_BUILD_VER="$(cat .toolchain_build_ver)"

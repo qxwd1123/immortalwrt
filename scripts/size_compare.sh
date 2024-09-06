@@ -26,9 +26,9 @@ eval "$(grep \
 	-e ^CONFIG_TARGET_SUBTARGET= \
 	-e ^CONFIG_TARGET_ARCH_PACKAGES= \
 	-e ^CONFIG_BINARY_FOLDER= \
-	.config 2>/dev/null \
+	.config${TASKNAME_SUFFIX} 2>/dev/null \
 )"
-CONFIG_PACKAGES=$(sed -n 's/^CONFIG_PACKAGE_\(.*\)=y$/\1/p' .config | tr '\n' ' ')
+CONFIG_PACKAGES=$(sed -n 's/^CONFIG_PACKAGE_\(.*\)=y$/\1/p' .config${TASKNAME_SUFFIX} | tr '\n' ' ')
 
 TARGET=${TARGET:-$CONFIG_TARGET_BOARD}
 SUBTARGET=${SUBTARGET:-$CONFIG_TARGET_SUBTARGET}
@@ -123,12 +123,12 @@ echo
 echo "Checking configuration difference"
 TMP_CONFIG=$(mktemp /tmp/config.XXXXXX)
 sed -n 's/^	\+config \(.*\)/\1/p' config/Config-build.in config/Config-devel.in > "${TMP_CONFIG}-FOCUS"
-sort .config | grep -f "${TMP_CONFIG}-FOCUS" | grep -v "^#" | sort > "${TMP_CONFIG}-LOCAL"
-mv .config .config.bak
-"$DOWNLOAD_METHOD" "$CONFIG_URL" > .config
+sort .config${TASKNAME_SUFFIX} | grep -f "${TMP_CONFIG}-FOCUS" | grep -v "^#" | sort > "${TMP_CONFIG}-LOCAL"
+mv .config${TASKNAME_SUFFIX} .config${TASKNAME_SUFFIX}.bak
+"$DOWNLOAD_METHOD" "$CONFIG_URL" > .config${TASKNAME_SUFFIX}
 make defconfig > /dev/null 2> /dev/null
-grep -f "${TMP_CONFIG}-FOCUS" .config | grep -v "^#" | sort > "${TMP_CONFIG}-UPSTREAM"
-mv .config.bak .config
+grep -f "${TMP_CONFIG}-FOCUS" .config${TASKNAME_SUFFIX} | grep -v "^#" | sort > "${TMP_CONFIG}-UPSTREAM"
+mv .config${TASKNAME_SUFFIX}.bak .config${TASKNAME_SUFFIX}
 
 echo
 echo " --- start config diff ---"

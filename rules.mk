@@ -6,8 +6,14 @@
 ifneq ($(__rules_inc),1)
 __rules_inc=1
 
+ifneq (${TASKNAME},)
+TASKNAME_SUFFIX:=_${TASKNAME}
+else
+TASKNAME_SUFFIX:=
+endif
+
 ifeq ($(DUMP),)
-  -include $(TOPDIR)/.config
+  -include $(TOPDIR)/.config${TASKNAME_SUFFIX}
 endif
 include $(TOPDIR)/include/debug.mk
 include $(TOPDIR)/include/verbose.mk

@@ -95,11 +95,11 @@ ifneq ($(DUMP),)
   # Keep DYNAMIC_DEF_PKG_CONF in sync with toplevel.mk to reflect the same configs
   DYNAMIC_DEF_PKG_CONF := CONFIG_USE_APK CONFIG_SELINUX CONFIG_SMALL_FLASH CONFIG_SECCOMP
   $(foreach config, $(DYNAMIC_DEF_PKG_CONF), \
-    $(eval $(config) := $(shell grep "$(config)=y" $(TOPDIR)/.config 2>/dev/null)) \
+    $(eval $(config) := $(shell grep "$(config)=y" $(TOPDIR)/.config${TASKNAME_SUFFIX} 2>/dev/null)) \
   )
   # The config options that are enabled by default and where other default
   # packages depends on needs to be set if they are missing in the .config.
-  ifeq ($(shell grep "CONFIG_SECCOMP" $(TOPDIR)/.config 2>/dev/null),)
+  ifeq ($(shell grep "CONFIG_SECCOMP" $(TOPDIR)/.config${TASKNAME_SUFFIX} 2>/dev/null),)
     ifeq ($(filter $(BOARD), uml),)
     ifneq ($(filter $(ARCH), aarch64 arm armeb mips mipsel mips64 mips64el i386 powerpc x86_64),)
       CONFIG_SECCOMP := y
