@@ -148,7 +148,7 @@ $(BIN_DIR)/$(SDK_NAME).tar.zst: clean
 	rm -rf \
 		$(SDK_BUILD_DIR)/target/linux/*/files* \
 		$(SDK_BUILD_DIR)/target/linux/*/patches*
-	./convert-config.pl $(TOPDIR)/.config > $(SDK_BUILD_DIR)/Config-build.in
+	./convert-config.pl $(TOPDIR)/.config${TASKNAME_SUFFIX} > $(SDK_BUILD_DIR)/Config-build.in
 	$(CP) -L \
 		$(TOPDIR)/LICENSES \
 		$(TOPDIR)/COPYING \

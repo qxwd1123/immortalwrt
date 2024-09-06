@@ -62,7 +62,7 @@ env_init() {
 	cd "$ENVDIR" || error "Failed to switch to the environment directory"
 	[ -d .git ] || { 
 		git init -b master &&
-		touch .config &&
+		touch .config${TASKNAME_SUFFIX} &&
 		mkdir files &&
 		git add . && 
 		git commit -q -m "Initial import"
@@ -73,7 +73,7 @@ env_init() {
 }
 
 env_sync_data() {
-	[ ! -L "$BASEDIR/.config" ] && [ -f "$BASEDIR/.config" ] && mv "$BASEDIR/.config" "$ENVDIR"
+	[ ! -L "$BASEDIR/.config${TASKNAME_SUFFIX}" ] && [ -f "$BASEDIR/.config${TASKNAME_SUFFIX}" ] && mv "$BASEDIR/.config${TASKNAME_SUFFIX}" "$ENVDIR"
 	git add .
 	git add -u
 }
@@ -85,8 +85,8 @@ env_sync() {
 }
 
 env_link_config() {
-	rm -f "$BASEDIR/.config"
-	ln -s env/.config "$BASEDIR/.config"
+	rm -f "$BASEDIR/.config${TASKNAME_SUFFIX}"
+	ln -s env/.config${TASKNAME_SUFFIX} "$BASEDIR/.config${TASKNAME_SUFFIX}"
 	mkdir -p "$ENVDIR/files"
 	[ -L "$BASEDIR/files" ] || ln -s env/files "$BASEDIR/files"
 }
@@ -134,18 +134,18 @@ env_ask_sync() {
 
 env_clear() {
 	env_init
-	[ -L "$BASEDIR/.config" ] && rm -f "$BASEDIR/.config"
+	[ -L "$BASEDIR/.config${TASKNAME_SUFFIX}" ] && rm -f "$BASEDIR/.config${TASKNAME_SUFFIX}"
 	[ -L "$BASEDIR/files" ] && rm -f "$BASEDIR/files"
-	[ -f "$ENVDIR/.config" ] || ( cd "$ENVDIR/files" && find . | grep -vE '^\.$' > /dev/null )
+	[ -f "$ENVDIR/.config${TASKNAME_SUFFIX}" ] || ( cd "$ENVDIR/files" && find . | grep -vE '^\.$' > /dev/null )
 	env_sync_data
 	if ask_bool 1 "Do you want to keep your current config and files"; then
 		mkdir -p "$BASEDIR/files"
 		shopt -s dotglob
 		cp -a "$ENVDIR/files/"* "$BASEDIR/files" 2>/dev/null >/dev/null
 		shopt -u dotglob
-		cp "$ENVDIR/.config" "$BASEDIR/"
+		cp "$ENVDIR/.config${TASKNAME_SUFFIX}" "$BASEDIR/"
 	else
-		rm -rf "$BASEDIR/files" "$BASEDIR/.config"
+		rm -rf "$BASEDIR/files" "$BASEDIR/.config${TASKNAME_SUFFIX}"
 	fi
 	cd "$BASEDIR" || exit 1
 	rm -rf "$ENVDIR"
@@ -190,10 +190,10 @@ env_new() {
 		if ask_bool 0 "Do you want to clone the current environment?"; then
 			from="$branch"
 		fi
-		rm -f "$BASEDIR/.config" "$BASEDIR/files"
+		rm -f "$BASEDIR/.config${TASKNAME_SUFFIX}" "$BASEDIR/files"
 	fi
 	git checkout -b "$1" "$from"
-	if [ -f "$BASEDIR/.config" ] || [ -d "$BASEDIR/files" ]; then
+	if [ -f "$BASEDIR/.config${TASKNAME_SUFFIX}" ] || [ -d "$BASEDIR/files" ]; then
 		if ask_bool 1 "Do you want to start your configuration repository with the current configuration?"; then
 			if [ -d "$BASEDIR/files" ] && [ ! -L "$BASEDIR/files" ]; then
 				mkdir -p "$ENVDIR/files"
@@ -204,7 +204,7 @@ env_new() {
 			fi
 			env_sync
 		else
-			rm -rf "$BASEDIR/.config" "$BASEDIR/files"
+			rm -rf "$BASEDIR/.config${TASKNAME_SUFFIX}" "$BASEDIR/files"
 		fi
 	fi
 	env_link_config

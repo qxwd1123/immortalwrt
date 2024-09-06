@@ -317,7 +317,7 @@ define Image/Manifest
 	)
 ifneq ($(CONFIG_JSON_CYCLONEDX_SBOM),)
 	$(SCRIPT_DIR)/package-metadata.pl imgcyclonedxsbom \
-		$(if $(IB),$(TOPDIR)/.packageinfo, $(TMP_DIR)/.packageinfo) \
+		$(if $(IB),$(TOPDIR)/${TASKNAME}/.packageinfo, $(TMP_DIR)/${TASKNAME}/.packageinfo) \
 		$(BIN_DIR)/$(IMG_PREFIX)$(if $(PROFILE_SANITIZED),-$(PROFILE_SANITIZED)).manifest > \
 		$(BIN_DIR)/$(IMG_PREFIX)$(if $(PROFILE_SANITIZED),-$(PROFILE_SANITIZED)).bom.cdx.json
 endif

@@ -307,7 +307,7 @@ print_config() {
 
 	# get CC; strip version; strip gcc and add - suffix
 	local prefix="${CC##*/}"; prefix="${prefix%-$version}"; prefix="${prefix%-*}-"
-	local config="${0%/scripts/*}/.config"
+	local config="${0%/scripts/*}/.config${TASKNAME_SUFFIX}"
 
 	# if no target specified, print choice list and exit
 	if [ -z "$mktarget" ]; then

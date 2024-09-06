@@ -3,7 +3,7 @@
 # Copyright (C) 2014 OpenWrt.org
 # Copyright (C) 2016 LEDE Project
 
--include $(TMP_DIR)/.packageauxvars
+-include $(TMP_DIR)/${TASKNAME}/.packageauxvars
 
 FEEDS_INSTALLED:=$(notdir $(wildcard $(TOPDIR)/package/feeds/*))
 FEEDS_AVAILABLE:=$(sort $(FEEDS_INSTALLED) $(shell $(SCRIPT_DIR)/feeds list -n 2>/dev/null))

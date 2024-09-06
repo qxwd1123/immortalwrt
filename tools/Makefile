@@ -222,7 +222,7 @@ $(curdir)//prepare = $(STAGING_DIR)/.prepared $(STAGING_DIR_HOST)/.prepared $(BI
 $(curdir)//compile = $(STAGING_DIR)/.prepared $(STAGING_DIR_HOST)/.prepared $(BIN_DIR)
 
 # prerequisites for the individual targets
-$(curdir)/ := .config prereq
+$(curdir)/ := .config${TASKNAME_SUFFIX} prereq
 
 $(curdir)/install: $(curdir)/compile
 

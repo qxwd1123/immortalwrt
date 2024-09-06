@@ -151,4 +151,4 @@ config MODULES
 	modules
 
 source "Config-build.in"
-source "tmp/.config-package.in"
+source "tmp/$(TASKNAME)/.package.in"

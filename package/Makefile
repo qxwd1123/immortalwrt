@@ -10,7 +10,7 @@ curdir:=package
 include $(INCLUDE_DIR)/feeds.mk
 include $(INCLUDE_DIR)/rootfs.mk
 
--include $(TMP_DIR)/.packagedeps
+-include $(TMP_DIR)/${TASKNAME}/.packagedeps
 package-y += kernel/linux
 $(curdir)/autoremove:=1
 $(curdir)/builddirs:=$(sort $(package-) $(package-y) $(package-m))
@@ -178,7 +178,7 @@ endif
 
 $(curdir)/flags-install:= -j1
 
-$(eval $(call stampfile,$(curdir),package,prereq,.config))
+$(eval $(call stampfile,$(curdir),package,prereq,.config${TASKNAME_SUFFIX}))
 $(eval $(call stampfile,$(curdir),package,cleanup,$(TMP_DIR)/.build))
 $(eval $(call stampfile,$(curdir),package,compile,$(TMP_DIR)/.build))
 $(eval $(call stampfile,$(curdir),package,install,$(TMP_DIR)/.build))

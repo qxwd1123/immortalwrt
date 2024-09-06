@@ -128,8 +128,8 @@ sub update_index($)
 	-d "./feeds/$name.tmp/info" or mkdir "./feeds/$name.tmp/info" or return 1;
 
 	system("$mk -s prepare-mk OPENWRT_BUILD= TMP_DIR=\"$ENV{TOPDIR}/feeds/$name.tmp\"");
-	system("$mk -s -f include/scan.mk IS_TTY=1 SCAN_TARGET=\"packageinfo\" SCAN_DIR=\"feeds/$name\" SCAN_NAME=\"package\" SCAN_DEPTH=5 SCAN_EXTRA=\"\" TMP_DIR=\"$ENV{TOPDIR}/feeds/$name.tmp\"");
-	system("$mk -s -f include/scan.mk IS_TTY=1 SCAN_TARGET=\"targetinfo\" SCAN_DIR=\"feeds/$name\" SCAN_NAME=\"target\" SCAN_DEPTH=5 SCAN_EXTRA=\"\" SCAN_MAKEOPTS=\"TARGET_BUILD=1\" TMP_DIR=\"$ENV{TOPDIR}/feeds/$name.tmp\"");
+	system("$mk -s -f include/scan.mk IS_TTY=1 SCAN_TARGET=\"packageinfo\" SCAN_DIR=\"feeds/$name\" SCAN_NAME=\"package\" SCAN_DEPTH=5 SCAN_EXTRA=\"\" TMP_DIR=\"$ENV{TOPDIR}/feeds/$name.tmp\" TASKNAME=\"\"");
+	system("$mk -s -f include/scan.mk IS_TTY=1 SCAN_TARGET=\"targetinfo\" SCAN_DIR=\"feeds/$name\" SCAN_NAME=\"target\" SCAN_DEPTH=5 SCAN_EXTRA=\"\" SCAN_MAKEOPTS=\"TARGET_BUILD=1\" TMP_DIR=\"$ENV{TOPDIR}/feeds/$name.tmp\" TASKNAME=\"\"");
 	system("ln -sf $name.tmp/.packageinfo ./feeds/$name.index");
 	system("ln -sf $name.tmp/.targetinfo ./feeds/$name.targetindex");
 
@@ -282,10 +282,10 @@ sub get_feed($) {
 sub get_installed() {
 	system("$mk -s prepare-tmpinfo OPENWRT_BUILD=");
 	clear_packages();
-	parse_package_metadata("./tmp/.packageinfo");
+	parse_package_metadata("./tmp/$ENV{TASKNAME}/.packageinfo");
 	%installed_pkg = %vpackage;
 	%installed = %srcpackage;
-	%installed_targets = get_targets("./tmp/.targetinfo");
+	%installed_targets = get_targets("./tmp/$ENV{TASKNAME}/.targetinfo");
 }
 
 sub search_feed {
@@ -667,14 +667,15 @@ sub install_target_or_package {
 
 sub refresh_config {
 	my $default = shift;
+	my $config_file = ".config$ENV{TASKNAME_SUFFIX}" || ".config";
 
 	# Don't create .config if it doesn't already exist so that making a
 	# config only occurs when the user intends it do (however we do
 	# want to refresh an existing config).
-	return if not (-e '.config');
+	return if not (-e $config_file);
 
 	# workaround for timestamp check
-	system("rm -f tmp/.packageinfo");
+	system("rm -f tmp/$ENV{TASKNAME}/.packageinfo");
 
 	# refresh the config
 	if ($default) {

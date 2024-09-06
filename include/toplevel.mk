@@ -57,7 +57,7 @@ export STAGING_DIR_HOST:=$(if $(STAGING_DIR),$(abspath $(STAGING_DIR)/../host),$
 unexport TAR_OPTIONS
 
 ifeq ($(FORCE),)
-  .config scripts/config/conf scripts/config/mconf: $(STAGING_DIR_HOST)/.prereq-build
+  .config${TASKNAME_SUFFIX} scripts/config/conf scripts/config/mconf: $(STAGING_DIR_HOST)/.prereq-build
 endif
 
 SCAN_COOKIE?=$(shell echo $$$$)
@@ -77,23 +77,23 @@ _ignore = $(foreach p,$(IGNORE_PACKAGES),--ignore $(p))
 
 prepare-tmpinfo: FORCE
 	@+$(MAKE) -r -s $(STAGING_DIR_HOST)/.prereq-build $(PREP_MK)
-	mkdir -p tmp/info feeds
+	mkdir -p tmp/info tmp/${TASKNAME} feeds
 	[ -e $(TOPDIR)/feeds/base ] || ln -sf $(TOPDIR)/package $(TOPDIR)/feeds/base
 	$(_SINGLE)$(NO_TRACE_MAKE) -j1 -r -s -f include/scan.mk SCAN_TARGET="packageinfo" SCAN_DIR="package" SCAN_NAME="package" SCAN_DEPTH=5 SCAN_EXTRA=""
 	$(_SINGLE)$(NO_TRACE_MAKE) -j1 -r -s -f include/scan.mk SCAN_TARGET="targetinfo" SCAN_DIR="target/linux" SCAN_NAME="target" SCAN_DEPTH=3 SCAN_EXTRA="" SCAN_MAKEOPTS="TARGET_BUILD=1"
 	for type in package target; do \
-		f=tmp/.$${type}info; t=tmp/.config-$${type}.in; \
+		f=tmp/${TASKNAME}/.$${type}info; t=tmp/${TASKNAME}/.$${type}.in; \
 		[ "$$t" -nt "$$f" ] || ./scripts/$${type}-metadata.pl $(_ignore) config "$$f" > "$$t" || { rm -f "$$t"; echo "Failed to build $$t"; false; break; }; \
 	done
-	[ tmp/.config-feeds.in -nt tmp/.packageauxvars ] || ./scripts/feeds feed_config > tmp/.config-feeds.in
-	./scripts/package-metadata.pl mk tmp/.packageinfo > tmp/.packagedeps || { rm -f tmp/.packagedeps; false; }
-	./scripts/package-metadata.pl pkgaux tmp/.packageinfo > tmp/.packageauxvars || { rm -f tmp/.packageauxvars; false; }
-	./scripts/package-metadata.pl usergroup tmp/.packageinfo > tmp/.packageusergroup || { rm -f tmp/.packageusergroup; false; }
+	[ tmp/${TASKNAME}/.config-feeds.in -nt tmp/${TASKNAME}/.packageauxvars ] || ./scripts/feeds feed_config > tmp/${TASKNAME}/.feeds.in
+	./scripts/package-metadata.pl mk tmp/${TASKNAME}/.packageinfo > tmp/${TASKNAME}/.packagedeps || { rm -f tmp/${TASKNAME}/.packagedeps; false; }
+	./scripts/package-metadata.pl pkgaux tmp/${TASKNAME}/.packageinfo > tmp/${TASKNAME}/.packageauxvars || { rm -f tmp/${TASKNAME}/.packageauxvars; false; }
+	./scripts/package-metadata.pl usergroup tmp/${TASKNAME}/.packageinfo > tmp/${TASKNAME}/.packageusergroup || { rm -f tmp/${TASKNAME}/.packageusergroup; false; }
 	touch $(TOPDIR)/tmp/.build
 
-.config: ./scripts/config/conf $(if $(CONFIG_HAVE_DOT_CONFIG),,prepare-tmpinfo)
-	@+if [ \! -e .config ] || ! grep CONFIG_HAVE_DOT_CONFIG .config >/dev/null; then \
-		[ -e $(HOME)/.openwrt/defconfig ] && cp $(HOME)/.openwrt/defconfig .config; \
+.config${TASKNAME_SUFFIX}: ./scripts/config/conf $(if $(CONFIG_HAVE_DOT_CONFIG),,prepare-tmpinfo)
+	@+if [ \! -e .config${TASKNAME_SUFFIX} ] || ! grep CONFIG_HAVE_DOT_CONFIG .config${TASKNAME_SUFFIX} >/dev/null; then \
+		[ -e $(HOME)/.openwrt/defconfig ] && cp $(HOME)/.openwrt/defconfig .config${TASKNAME_SUFFIX}; \
 		$(_SINGLE)$(NO_TRACE_MAKE) menuconfig $(PREP_MK); \
 	fi
 
@@ -111,17 +111,17 @@ scripts/config/%onf: FORCE
 $(eval $(call rdep,scripts/config,scripts/config/mconf))
 
 config: scripts/config/conf prepare-tmpinfo FORCE
-	[ -L .config ] && export KCONFIG_OVERWRITECONFIG=1; \
-		$< $(KCONF_FLAGS) Config.in
+	[ -L .config${TASKNAME_SUFFIX} ] && export KCONFIG_OVERWRITECONFIG=1; \
+		KCONFIG_CONFIG=.config${TASKNAME_SUFFIX} $< $(KCONF_FLAGS) Config.in
 
 config-clean: FORCE
 	$(_SINGLE)$(NO_TRACE_MAKE) -C scripts/config clean
 
 defconfig: scripts/config/conf prepare-tmpinfo FORCE
-	touch .config
-	@if [ ! -s .config -a -e $(HOME)/.openwrt/defconfig ]; then cp $(HOME)/.openwrt/defconfig .config; fi
-	[ -L .config ] && export KCONFIG_OVERWRITECONFIG=1; \
-		$< $(KCONF_FLAGS) --defconfig=.config Config.in
+	touch .config${TASKNAME_SUFFIX}
+	@if [ ! -s .config${TASKNAME_SUFFIX} -a -e $(HOME)/.openwrt/defconfig ]; then cp $(HOME)/.openwrt/defconfig .config${TASKNAME_SUFFIX}; fi
+	[ -L .config${TASKNAME_SUFFIX} ] && export KCONFIG_OVERWRITECONFIG=1; \
+		KCONFIG_CONFIG=.config${TASKNAME_SUFFIX} $< $(KCONF_FLAGS) --defconfig=.config${TASKNAME_SUFFIX} Config.in
 
 confdefault-y=allyes
 confdefault-m=allmod
@@ -129,30 +129,30 @@ confdefault-n=allno
 confdefault:=$(confdefault-$(CONFDEFAULT))
 
 oldconfig: scripts/config/conf prepare-tmpinfo FORCE
-	[ -L .config ] && export KCONFIG_OVERWRITECONFIG=1; \
-		$< $(KCONF_FLAGS) --$(if $(confdefault),$(confdefault),old)config Config.in
+	[ -L .config${TASKNAME_SUFFIX} ] && export KCONFIG_OVERWRITECONFIG=1; \
+		KCONFIG_CONFIG=.config${TASKNAME_SUFFIX} $< $(KCONF_FLAGS) --$(if $(confdefault),$(confdefault),old)config Config.in
 
 menuconfig: scripts/config/mconf prepare-tmpinfo FORCE
-	if [ \! -e .config -a -e $(HOME)/.openwrt/defconfig ]; then \
-		cp $(HOME)/.openwrt/defconfig .config; \
+	if [ \! -e .config${TASKNAME_SUFFIX} -a -e $(HOME)/.openwrt/defconfig ]; then \
+		cp $(HOME)/.openwrt/defconfig .config${TASKNAME_SUFFIX}; \
 	fi
-	[ -L .config ] && export KCONFIG_OVERWRITECONFIG=1; \
-		$< Config.in
+	[ -L .config${TASKNAME_SUFFIX} ] && export KCONFIG_OVERWRITECONFIG=1; \
+		KCONFIG_CONFIG=.config${TASKNAME_SUFFIX} $< Config.in
 
 nconfig: scripts/config/nconf prepare-tmpinfo FORCE
-	if [ \! -e .config -a -e $(HOME)/.openwrt/defconfig ]; then \
-		cp $(HOME)/.openwrt/defconfig .config; \
+	if [ \! -e .config${TASKNAME_SUFFIX} -a -e $(HOME)/.openwrt/defconfig ]; then \
+		cp $(HOME)/.openwrt/defconfig .config${TASKNAME_SUFFIX}; \
 	fi
-	[ -L .config ] && export KCONFIG_OVERWRITECONFIG=1; \
-		$< Config.in
+	[ -L .config${TASKNAME_SUFFIX} ] && export KCONFIG_OVERWRITECONFIG=1; \
+		KCONFIG_CONFIG=.config${TASKNAME_SUFFIX} $< Config.in
 
 xconfig: scripts/config/qconf prepare-tmpinfo FORCE
-	if [ \! -e .config -a -e $(HOME)/.openwrt/defconfig ]; then \
-		cp $(HOME)/.openwrt/defconfig .config; \
+	if [ \! -e .config${TASKNAME_SUFFIX} -a -e $(HOME)/.openwrt/defconfig ]; then \
+		cp $(HOME)/.openwrt/defconfig .config${TASKNAME_SUFFIX}; \
 	fi
-	$< Config.in
+	KCONFIG_CONFIG=.config${TASKNAME_SUFFIX} $< Config.in
 
-prepare_kernel_conf: .config toolchain/install FORCE
+prepare_kernel_conf: .config${TASKNAME_SUFFIX} toolchain/install FORCE
 
 ifeq ($(wildcard $(STAGING_DIR_HOST)/bin/quilt),)
   prepare_kernel_conf:
@@ -201,16 +201,16 @@ else
   DOWNLOAD_DIRS = package/download
 endif
 
-download: .config FORCE $(if $(wildcard $(STAGING_DIR_HOST)/bin/flock),,tools/flock/compile)
+download: .config${TASKNAME_SUFFIX} FORCE $(if $(wildcard $(STAGING_DIR_HOST)/bin/flock),,tools/flock/compile)
 	@+$(foreach dir,$(DOWNLOAD_DIRS),$(SUBMAKE) $(dir);)
 
-clean dirclean: .config
+clean dirclean: .config${TASKNAME_SUFFIX}
 	@+$(SUBMAKE) -r $@
 
-prereq:: prepare-tmpinfo .config
+prereq:: prepare-tmpinfo .config${TASKNAME_SUFFIX}
 	@+$(NO_TRACE_MAKE) -r -s $@
 
-check: .config FORCE
+check: .config${TASKNAME_SUFFIX} FORCE
 	@+$(NO_TRACE_MAKE) -r -s $@ QUIET= V=s
 
 val.% var.%: FORCE
@@ -222,7 +222,7 @@ ifeq ($(SDK),1)
 
 %::
 	@+$(PREP_MK) $(NO_TRACE_MAKE) -r -s prereq
-	@./scripts/config/conf $(KCONF_FLAGS) --defconfig=.config Config.in
+	@./scripts/config/conf $(KCONF_FLAGS) --defconfig=.config${TASKNAME_SUFFIX} Config.in
 	@+$(ULIMIT_FIX) $(SUBMAKE) -r $@
 
 else
@@ -230,9 +230,9 @@ else
 %::
 	@+$(PREP_MK) $(NO_TRACE_MAKE) -r -s prereq
 	@( \
-		cp .config tmp/.config; \
-		./scripts/config/conf $(KCONF_FLAGS) --defconfig=tmp/.config -w tmp/.config Config.in > /dev/null 2>&1; \
-		if ./scripts/kconfig.pl '>' .config tmp/.config | grep -q CONFIG; then \
+		cp .config${TASKNAME_SUFFIX} tmp/.config${TASKNAME_SUFFIX}; \
+		./scripts/config/conf $(KCONF_FLAGS) --defconfig=tmp/.config${TASKNAME_SUFFIX} -w tmp/.config${TASKNAME_SUFFIX} Config.in > /dev/null 2>&1; \
+		if ./scripts/kconfig.pl '>' .config${TASKNAME_SUFFIX} tmp/.config${TASKNAME_SUFFIX} | grep -q CONFIG; then \
 			printf "$(_R)WARNING: your configuration is out of sync. Please run make menuconfig, oldconfig or defconfig!$(_N)\n" >&2; \
 		fi \
 	)
@@ -265,7 +265,7 @@ distclean:
 	@$(_SINGLE)$(SUBMAKE) -C scripts/config clean
 
 ifeq ($(findstring v,$(DEBUG)),)
-  .SILENT: symlinkclean clean dirclean distclean config-clean download help tmpinfo-clean .config scripts/config/mconf scripts/config/conf menuconfig $(STAGING_DIR_HOST)/.prereq-build tmp/.prereq-package prepare-tmpinfo
+  .SILENT: symlinkclean clean dirclean distclean config-clean download help tmpinfo-clean .config${TASKNAME_SUFFIX} scripts/config/mconf scripts/config/conf menuconfig $(STAGING_DIR_HOST)/.prereq-build tmp/.prereq-package prepare-tmpinfo
 endif
 .PHONY: help FORCE
 .NOTPARALLEL:

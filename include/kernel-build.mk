@@ -127,7 +127,7 @@ define BuildKernel
 		echo; \
 	) > $$@
 
-  $(STAMP_CONFIGURED): $(STAMP_PREPARED) $(LINUX_KCONFIG_LIST) $(TOPDIR)/.config FORCE
+  $(STAMP_CONFIGURED): $(STAMP_PREPARED) $(LINUX_KCONFIG_LIST) $(TOPDIR)/.config${TASKNAME_SUFFIX} FORCE
 	$(Kernel/Configure)
 	touch $$@
 
