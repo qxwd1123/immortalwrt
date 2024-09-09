@@ -257,7 +257,6 @@ define Build/check-size
 	limitsize="$$(($(call exp_units,$(if $(1),$(1),$(IMAGE_SIZE)))))"; \
 	[ $$limitsize -ge $$imagesize ] || { \
 		$(call ERROR_MESSAGE,    WARNING: Image file $@ is too big: $$imagesize > $$limitsize); \
-		rm -f $@; \
 	}
 endef
 
