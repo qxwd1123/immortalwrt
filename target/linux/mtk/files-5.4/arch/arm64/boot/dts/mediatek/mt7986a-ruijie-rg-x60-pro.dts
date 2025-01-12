@@ -20,6 +20,7 @@
 			#address-cells = <0x01>;
 			#size-cells = <0x01>;
 
+			
  			partition@0 {
  				label = "BL2";
  				reg = <0x000000 0x100000>;
@@ -37,7 +38,7 @@
  				reg = <0x180000 0x200000>;
  				read-only;
  			};
-
+			
  			partition@380000 {
  				label = "FIP";
  				reg = <0x380000 0x200000>;
@@ -57,8 +58,9 @@
 
  			partition@680000 {
  				label = "ubi";
- 				reg = <0x680000 0x6b00000>;
+ 				reg = <0x680000 0x3f00000>;
  			};
+
 		};
 	};
 };

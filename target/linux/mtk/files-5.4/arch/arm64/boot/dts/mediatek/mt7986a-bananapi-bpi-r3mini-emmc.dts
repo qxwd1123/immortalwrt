@@ -1,9 +1,19 @@
 /dts-v1/;
 #include "mt7986a.dtsi"
 #include "mt7986a-pinctrl.dtsi"
+#include <dt-bindings/input/input.h>
+#include <dt-bindings/gpio/gpio.h>
 / {
 	model = "Bananapi BPI-R3MINI EMMC";
 	compatible = "bananapi,bpi-r3mini-emmc", "mediatek,mt7986a";
+
+	aliases {
+		led-boot = &status_led;
+		led-failsafe = &status_led;
+		led-running = &status_led;
+		led-upgrade = &status_led;
+	};
+
 	chosen {
 		bootargs = "console=ttyS0,115200n1 loglevel=8 \
 		earlycon=uart8250,mmio32,0x11002000 \
@@ -12,6 +22,35 @@
 
 	memory {
 		reg = <0 0x40000000 0 0x10000000>;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		status_led: green {
+			label = "r3mini:green";
+			gpios = <&pio 19 GPIO_ACTIVE_HIGH>;
+		};
+
+		led-1 {
+			label = "r3mini:blue1";
+			gpios = <&pio 1 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+
+		led-2 {
+			label = "r3mini:blue2";
+			gpios = <&pio 2 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+	};
+
+	fan: pwm-fan {
+		compatible = "pwm-fan";
+		#cooling-cells = <2>;
+		cooling-levels = <220 160 80 40>;
+		pwms = <&pwm 0 10000 0>;
+		status = "okay";
 	};
 
         reg_1p8v: regulator-1p8v {
@@ -95,10 +134,62 @@
 	status = "okay";
 };
 
+&cpu_thermal {
+	trips {
+		cpu_trip_critical: critical {
+			temperature = <95000>;
+			hysteresis = <2000>;
+			type = "critical";
+		};
+
+		cpu_trip_hot: hot {
+			temperature = <40000>;
+			hysteresis = <2000>;
+			type = "hot";
+		};
+
+		cpu_trip_active: active {
+			temperature = <35000>;
+			hysteresis = <2000>;
+			type = "active";
+		};
+
+		cpu_trip_passive: passive {
+			temperature = <20000>;
+			hysteresis = <2000>;
+			type = "passive";
+		};
+	};
+
+	cooling-maps {
+		cpu-active-high {
+			cooling-device = <&fan 3 3>;
+			trip = <&cpu_trip_critical>;
+		};
+
+		cpu-active-low {
+			cooling-device = <&fan 2 2>;
+			trip = <&cpu_trip_hot>;
+		};
+
+		cpu-active {
+			cooling-device = <&fan 1 1>;
+			trip = <&cpu_trip_active>;
+		};
+
+		cpu-passive {
+			cooling-device = <&fan 0 0>;
+			trip = <&cpu_trip_passive>;
+		};
+	};
+};
+
+
 &eth {
 	status = "okay";
 
 	gmac0: mac@0 {
+		
 		compatible = "mediatek,eth-mac";
 		reg = <0>;
 		phy-mode = "2500base-x";
@@ -111,6 +202,7 @@
 	};
 
 	gmac1: mac@1 {
+		label = "wan";
 		compatible = "mediatek,eth-mac";
 		reg = <1>;
 		phy-mode = "2500base-x";
@@ -155,8 +247,9 @@
 };
 
 &hnat {
-	mtketh-wan = "eth1";
+	mtketh-wan = "wan";
 	mtketh-lan = "eth0";
+	mtketh-ppd = "wan";
 	mtketh-max-gmac = <2>;
 	status = "okay";
 };
@@ -191,7 +284,7 @@
 &spi1 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&spic_pins_g2>;
-	status = "okay";
+	status = "disabled";
 };
 
 &mmc0 {
@@ -229,6 +322,13 @@
 */
 
 &pio {
+	/* GPIO 11 NGFF_GNSS_OFF. output-high: enable, output-low: disable */
+	gnss_off {
+		gpio-hog;
+		gpios = <11 GPIO_ACTIVE_HIGH>;
+		output-high;
+	};
+
         mmc0_pins_default: mmc0-pins-50-to-61-default {
                 mux {
                         function = "flash";
@@ -304,6 +404,8 @@
 		};
 	};
 
+	 
+
 	wf_2g_5g_pins: wf_2g_5g-pins {
 		mux {
 			function = "wifi";
@@ -337,4 +439,9 @@
 			drive-strength = <MTK_DRIVE_4mA>;
 		};
 	};
+};
+
+&xhci {
+	  
+	status = "okay";
 };
